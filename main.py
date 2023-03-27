@@ -3,8 +3,13 @@ from typing import Tuple
 import cairo
 import numpy as np
 
+def parse_color(color: str) -> Tuple[float, float, float]:
+    return tuple(c / 255.0 for c in bytearray.fromhex(color.lstrip('#')))
+
+
 def index(ix, iy, stride: int):
     return ix + iy * stride
+
 
 def create_mesh(resolution: Tuple[int, int], size: Tuple[float, float]) -> np.ndarray:
     w, h = resolution
@@ -23,12 +28,11 @@ def create_mesh(resolution: Tuple[int, int], size: Tuple[float, float]) -> np.nd
         index(ix + 1, iy + 1, stride),
     ])
     bottom = np.vstack([
+        index(ix, iy + 1, stride),
         index(ix, iy, stride),
         index(ix + 1, iy + 1, stride),
-        index(ix, iy + 1, stride),
     ])
-    triangle_indices = np.hstack([top, bottom])
-    return (x.ravel(), y.ravel()), triangle_indices.T
+    return (x.ravel(), y.ravel()), np.hstack([top, bottom]).T
     
 
 def main():
@@ -36,7 +40,11 @@ def main():
     ctx = cairo.Context(surface)
     (x, y), triangle_indices = create_mesh((5, 5), (200, 200))
     
-    ctx.set_source_rgb(1, 0, 1)
+    gradient = cairo.LinearGradient(0, 0, 200, 200)
+    gradient.add_color_stop_rgb(0, *parse_color('#f953c6'))
+    gradient.add_color_stop_rgb(1, *parse_color('#b91d73'))
+
+    ctx.set_source(gradient)
 
     for i0, i1, i2 in triangle_indices:
         ctx.move_to(x[i0], y[i0])
@@ -44,12 +52,7 @@ def main():
         ctx.line_to(x[i2], y[i2])
         ctx.close_path()
         ctx.fill()
-    #ctx.move_to(100, 50)
-    #ctx.line_to(50, 150)
-    #ctx.line_to(150, 150)
-    #ctx.close_path()
-    #ctx.fill()
 
-    surface.write_to_png('triangle.png')
+    surface.write_to_png('output.png')
 
 main()
