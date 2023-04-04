@@ -24,7 +24,11 @@ def main():
     gradient = cairo.LinearGradient(0, 0, width, height)
     gradient.add_color_stop_rgb(0, *parse_color('#f953c6'))
     gradient.add_color_stop_rgb(1, *parse_color('#b91d73'))
-    #ctx.set_source(gradient)
+    
+    # draw background square
+    ctx.set_source(gradient)
+    ctx.rectangle(0, 0, width, height)
+    ctx.fill()
 
     for indices in triangle_indices:
         center = np.mean(np.vstack([x[indices], y[indices]]), axis=-1)
