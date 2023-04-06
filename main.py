@@ -7,7 +7,7 @@ from mesh_art.mesh2d import create_mesh
 
 def main():
     width, height = 512, 512
-    padding = 0.25
+    padding = 0.1
 
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
@@ -18,7 +18,7 @@ def main():
 
     rho = 0.001
     n = int(rho * width * height)
-    points = np.random.random((n, 2)) * (1 + 2 * padding) * np.array([width, height]) - np.array([padding, padding])
+    points = (np.random.random((n, 2)) * (1 + 2 * padding) - np.array([padding, padding])) * np.array([width, height])
     triangle_indices = Delaunay(points).simplices
     x, y = np.hsplit(points, 2)
 
@@ -33,7 +33,7 @@ def main():
     ctx.fill()
 
     for indices in triangle_indices:
-        center = np.mean(np.vstack([x[indices], y[indices]]), axis=-1)
+        center = np.mean(np.vstack([x[indices].ravel(), y[indices].ravel()]), axis=-1)
         i0, i1, i2 = indices
         ctx.set_source_rgb(*sample(gradient, tuple(center)))
         ctx.move_to(x[i0], y[i0])

@@ -38,3 +38,5 @@ def sample(gradient: cairo.LinearGradient, p: Tuple[float, float]) -> Color:
         del a0, a1
         if t0 <= t:
             return lerp_color((r0, g0, b0), (r1, g1, b1), (t - t0) / (t1 - t0))
+    _, r, g, b, _ = stops[0]
+    return r, g, b
