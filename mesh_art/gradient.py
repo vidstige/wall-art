@@ -30,7 +30,7 @@ def lerp_color(a: Color, b: Color, t: float) -> Color:
     return tuple(lerp(c0, c1, t) for c0, c1 in zip(a, b))
 
 
-def sample(gradient: cairo.LinearGradient, p: Tuple[float, float]) -> Color:
+def sample_gradient(gradient: cairo.LinearGradient, p: Tuple[float, float]) -> Color:
     x0, y0, x1, y1 = gradient.get_linear_points()
     t = project_to_line((x0, y0), (x1, y1), p)
     stops = gradient.get_color_stops_rgba()
