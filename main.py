@@ -6,8 +6,8 @@ from mesh_art.gradient import parse_color, sample
 from mesh_art.mesh2d import create_mesh
 
 def main():
-    width, height = 512, 512
-    padding = 0.1
+    width, height = 800, 800
+    padding = 0.05
 
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
@@ -16,7 +16,7 @@ def main():
     #x = x + np.random.normal(size=x.shape) * 10
     #y = y + np.random.normal(size=y.shape) * 10
 
-    rho = 0.001
+    rho = 0.0001
     n = int(rho * width * height)
     points = (np.random.random((n, 2)) * (1 + 2 * padding) - np.array([padding, padding])) * np.array([width, height])
     triangle_indices = Delaunay(points).simplices
