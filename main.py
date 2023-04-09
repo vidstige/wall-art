@@ -1,9 +1,12 @@
+import random
+
 import cairo
 import numpy as np
 from scipy.spatial import Delaunay
 from PIL import Image
 
-from mesh_art.gradient import parse_color, sample_gradient
+from mesh_art.gradient import sample_gradient
+from mesh_art.uigradients import add_stops_to, gradient_names
 
 
 def sample(pdf: np.ndarray, n: int) -> np.ndarray:
@@ -12,9 +15,19 @@ def sample(pdf: np.ndarray, n: int) -> np.ndarray:
     return np.array(list(zip(*np.unravel_index(indices, pdf.shape))))
 
 
+def points_for(path: str, n: int) -> np.ndarray:
+    im = np.array(Image.open(path).convert('L')).T / 255
+    clamped = np.clip(im, 0.025, 1 - 0.025)
+    pdf = (1 - clamped) / np.sum(1 - clamped)
+    return sample(pdf, n) / np.array(pdf.shape)
+
+
+def pad(points: np.ndarray, padding: float) -> np.ndarray:
+    """Pads the 2d-points by a certain amount on each side"""
+    return (points * (1 + 2 * padding) - np.array([padding, padding]))
+
+
 def main():
-    im = np.array(Image.open('images/logo.png').convert('L')).T
-    pdf = im / np.sum(im)
 
     width, height = 800, 800
     padding = 0.15
@@ -22,31 +35,29 @@ def main():
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
 
-    #(x, y), triangle_indices = create_mesh((5, 5), (width, height))
-    #x = x + np.random.normal(size=x.shape) * 10
-    #y = y + np.random.normal(size=y.shape) * 10
-
-    rho = 0.005
+    rho = 0.0005
     n = int(rho * width * height)
-    #points = np.random.random((n, 2))
-    points = sample(pdf, n) / np.array(pdf.shape)
-    print(points)
+    points = np.random.random((n, 2))
+    #points = points_for('images/logo.png', n)
     
     # pad
-    points = (points * (1 + 2 * padding) - np.array([padding, padding])) * np.array([width, height])
+    points = pad(points, padding=padding) * np.array([width, height])
 
     triangle_indices = Delaunay(points).simplices
     x, y = np.hsplit(points, 2)
 
-    # https://uigradients.com/#Neuromancer
     gradient = cairo.LinearGradient(0, 0, width, height)
-    gradient.add_color_stop_rgb(0, *parse_color('#f953c6'))
-    gradient.add_color_stop_rgb(1, *parse_color('#b91d73'))
+    #add_stops_to(random.choice(gradient_names()), gradient)
+    add_stops_to('Ultra Voilet', gradient)
+
+    # https://uigradients.com/#Neuromancer
+    #gradient.add_color_stop_rgb(0, *parse_color('#f953c6'))
+    #gradient.add_color_stop_rgb(1, *parse_color('#b91d73'))
     
     # draw background square
-    #ctx.set_source(gradient)
-    #ctx.rectangle(0, 0, width, height)
-    #ctx.fill()
+    ctx.set_source(gradient)
+    ctx.rectangle(0, 0, width, height)
+    ctx.fill()
 
     for indices in triangle_indices:
         center = np.mean(np.vstack([x[indices].ravel(), y[indices].ravel()]), axis=-1)
