@@ -27,7 +27,11 @@ def pad(points: np.ndarray, padding: float) -> np.ndarray:
     return (points * (1 + 2 * padding) - np.array([padding, padding]))
 
 
-def art_png_to(desination, resolution: Tuple[int, int], gradient_name: str, rho: float, padding: float):
+def art_png_to(
+        desination,
+        resolution: Tuple[int, int], gradient_name: str, rho: float, padding: float,
+        offset: float, background: bool):
+    np.random.seed(1337)
     width, height = resolution
 
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
@@ -47,11 +51,12 @@ def art_png_to(desination, resolution: Tuple[int, int], gradient_name: str, rho:
     add_stops_to(gradient_name, gradient)
 
     # draw background square
-    ctx.set_source(gradient)
-    ctx.rectangle(0, 0, width, height)
-    ctx.fill()
+    if background:
+        ctx.set_source(gradient)
+        ctx.rectangle(0, 0, width, height)
+        ctx.fill()
 
-    offsets = np.random.normal(0, 10, (len(triangle_indices), 2))
+    offsets = np.random.normal(0, offset, (len(triangle_indices), 2))
     for indices, offset in zip(triangle_indices, offsets):
         center = np.mean(np.vstack([x[indices].ravel(), y[indices].ravel()]), axis=-1)
         i0, i1, i2 = indices

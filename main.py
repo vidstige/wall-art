@@ -13,5 +13,7 @@ art_png_to(
     resolution=(800, 800),
     gradient_name=gradient_name,
     rho=0.0005,
-    padding=0.15
+    padding=0.15,
+    offset=10,
+    background=True,
 )
