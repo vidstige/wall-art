@@ -1,3 +1,4 @@
 pycairo
 scipy
 pillow
+scikit-image

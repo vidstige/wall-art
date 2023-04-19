@@ -4,6 +4,7 @@ import cairo
 import numpy as np
 from scipy.spatial import Delaunay
 from PIL import Image
+from skimage import data, io, filters
 
 from mesh_art.gradient import sample_gradient
 from mesh_art.uigradients import add_stops_to, gradient_names
@@ -17,9 +18,10 @@ def sample(pdf: np.ndarray, n: int) -> np.ndarray:
 
 def points_for(path: str, n: int) -> np.ndarray:
     im = np.array(Image.open(path).convert('L')).T / 255
-    clamped = np.clip(im, 0.025, 1 - 0.025)
-    pdf = (1 - clamped) / np.sum(1 - clamped)
-    return sample(pdf, n) / np.array(pdf.shape)
+    edges = filters.sobel(im)
+    edge_points = np.argwhere(edges > 0.01)
+    indices = np.random.choice(np.arange(len(edge_points)), size=n)
+    return edge_points[indices] / im.shape
 
 
 def pad(points: np.ndarray, padding: float) -> np.ndarray:
@@ -38,9 +40,12 @@ def art_png_to(
     ctx = cairo.Context(surface)
 
     n = int(rho * width * height)
+    #points = np.vstack([
+    #    np.random.random((int(n * 0.2), 2)),
+    #    points_for('images/logo.png', int(n * 0.8)),
+    #])
     points = np.random.random((n, 2))
-    #points = points_for('images/logo.png', n)
-    
+
     # pad
     points = pad(points, padding=padding) * np.array([width, height])
 

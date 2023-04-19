@@ -1,7 +1,8 @@
 from typing import Tuple
-from flask import Flask, Response, request
+from flask import Flask, Response, jsonify, request
 
 from mesh_art.art import art_png_to
+from mesh_art.uigradients import gradient_names
 
 app = Flask(__name__)
 
@@ -39,3 +40,8 @@ def mesh():
         background=background,
     )
     return response
+
+
+@app.route("/gradient_names/")
+def get_gradient_names():
+    return jsonify(gradient_names())
